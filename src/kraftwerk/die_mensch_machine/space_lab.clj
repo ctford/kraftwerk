@@ -59,9 +59,7 @@
                     (with (->> (interleave progression (repeat nil))
                                (phrase (cycle [3 1]))
                                (times 4 8)
-                               (where :part (is :chords))))
-                    (where :time #(* % 5/4))
-                    (where :duration #(* % 5/4)))) 
+                               (where :part (is :chords)))))) 
          (then (->> chorus
                     (filter #(-> % :part #{:echo :beat})) 
                     (filter #(-> % :time (<= 16))))))))
