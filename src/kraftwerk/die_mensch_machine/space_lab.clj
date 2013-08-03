@@ -228,3 +228,6 @@
 (defmethod play-note :default [note]
   (print (str "No part for " note ". ")))
 
+(comment
+  (play track)
+  )
