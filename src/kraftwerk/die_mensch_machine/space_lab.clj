@@ -24,6 +24,16 @@
     (with (->> (rhythm (repeat 8 1)) (having :drum (cycle [:kick :tock]))))
     (where :part (is :beat))))
 
+(def intro
+  (let [line (->> (range 2 (+ 2 16))
+                  (phrase (repeat 1))
+                  (where :duration (partial + 3))
+                  (where :part (is :echo)))]
+    (->> line
+         (canon (simple 1/2))
+         (canon (simple 12))
+         (where :duration (is 4)))))
+
 (def chorus
   (let [chords (->> [nil (-> triad (root 2) (inv 1))
                      nil (-> triad (root -4) (update-in [:iii] #(+ % 1/2)))]
@@ -64,7 +74,9 @@
 
 (def track
   (->>
-    chorus
+    intro
+    (then (->> chorus (filter #(-> % :part #{:chords :melody}))))
+    (then chorus)
     (then verse)
     (wherever :pitch, :pitch (comp C minor)) 
     (where :duration (bpm 105)) 
@@ -115,8 +127,8 @@
         osc (overtone/saw freq)]
     (-> osc (overtone/lpf 1500) (* envelope) (* 1/2))))
 
-(overtone/definst res [freq 440]
-  (-> (overtone/perc 0 0.7)
+(overtone/definst res [freq 440 dur 350]
+  (-> (overtone/perc 0 (* 2 (/ dur 1000)))
       (overtone/env-gen :action overtone/FREE)
       (* (overtone/mix [(overtone/saw freq) (overtone/pulse (/ freq 2) 0.5)]))
       (overtone/rlpf 800 0.1)
@@ -152,8 +164,8 @@
 (defmethod play-note :harmony [{midi :pitch ms :duration}]
   (-> midi overtone/midi->hz (* 2) (string ms))) 
 
-(defmethod play-note :echo [{midi :pitch}]
-  (-> midi overtone/midi->hz res))
+(defmethod play-note :echo [{midi :pitch ms :duration}]
+  (-> midi overtone/midi->hz (res ms)))
 
 (defmethod play-note :chords [{midi :pitch ms :duration}]
   (-> midi overtone/midi->hz (poly ms)))
