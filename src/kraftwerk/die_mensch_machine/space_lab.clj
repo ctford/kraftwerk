@@ -25,14 +25,14 @@
     (where :part (is :beat))))
 
 (def intro
-  (let [line (->> (range 2 (+ 2 16))
-                  (phrase (repeat 1))
-                  (where :duration (partial + 3))
-                  (where :part (is :echo)))]
-    (->> line
-         (canon (simple 1/2))
-         (canon (simple 12))
-         (where :duration (is 4)))))
+  (let [line #(->> (range 2 (+ 2 14))
+                   (phrase (repeat %))
+                   (canon (simple (* % 1/2)))
+                   (where :part (is :echo)))]
+    (->> (mapthen line [1 1/2 1/2 1/4 1/4])
+         (then (->> (mapthen line (mapcat repeat [2 4 8] [1/8 1/16 1/32]))
+                    (where :pitch raise)))
+         (where :duration #(* % 4)))))
 
 (def chorus
   (let [chords (->> [nil (-> triad (root 2) (inv 1))
@@ -79,8 +79,10 @@
   (->>
     intro
     (then (->> chorus (filter #(-> % :part #{:chords :melody}))))
-    (then (after 4 chorus))
+    (then (->> chorus (filter #(-> % :part #{:echo :beat}))))
+    (then chorus)
     (then verse)
+    (then chorus)
     (wherever :pitch, :pitch (comp C minor)) 
     (where :duration (bpm 105)) 
     (where :time (bpm 105))))
