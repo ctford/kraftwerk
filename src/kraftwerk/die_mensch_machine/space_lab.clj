@@ -8,6 +8,8 @@
   (:require
     [overtone.live :as overtone]))
 
+; See https://github.com/supercollider/supercollider/blob/master/examples/pieces/spacelab.scd
+
 ; Utilities
 (defn mapthen [f & args]
   (->> args
