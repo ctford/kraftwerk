@@ -17,11 +17,16 @@
 (def inv inversion)
 
 ; Notes
+
+(def beat
+  (->>
+    (rhythm (repeat 32 1/4)) (where :drum (is :tick))
+    (with (->> (rhythm (repeat 8 1)) (having :drum (cycle [:kick :tock]))))
+    (where :part (is :beat))))
+
 (def track
   (->>
-    (rhythm (repeat 32 1/4))
-    (where :part (is :beat))
-    (where :drum (is :tick))
+    beat
     (wherever :pitch, :pitch (comp C minor)) 
     (where :duration (bpm 105)) 
     (where :time (bpm 105))))
