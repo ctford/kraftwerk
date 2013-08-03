@@ -111,13 +111,14 @@
 
 (def vamp 
   (let [extra-harmony (->> [7 2 3 4 2 3 7]
-                     (phrase [4 1 0.5 6.5 1 0.5 2.5])
-                     (times 2)
-                     (where :part (is :harmony)))
+                           (phrase [4 1 0.5 6.5 1 0.5 2.5])
+                           (times 2)
+                           (where :part (is :harmony)))
         once (with verse extra-harmony)]
     (->> once 
          (times 2)
-         (then (map #(assoc % :volume (/ (- 32 (:time %)) 32)) once)))))
+         (then (map #(assoc % :volume
+                            (/ (max 0 (- 30 (:time %))) 32)) once)))))
 
 (def track
   (->>
