@@ -17,6 +17,7 @@
 (def inv inversion)
 
 ; Notes
+
 (def beat
   (->>
     (rhythm (repeat 32 1/4))
@@ -24,11 +25,14 @@
     (with (->> (rhythm (repeat 8 1)) (having :drum (cycle [:kick :tock]))))
     (where :part (is :beat))))
 
+(def progression
+  [(-> triad (root 2) (inv 1))
+   (-> triad (root -4) (update-in [:iii] #(+ % 1/2)))]) 
+
 (def chorus
-  (let [chords (->> [nil (-> triad (root 2) (inv 1))
-                     nil (-> triad (root -4) (update-in [:iii] #(+ % 1/2)))]
+  (let [chords (->> (interleave (repeat nil) progression)
                     (phrase (cycle [1 3]))
-                    (where :part (is :chords)))
+                    (where :part (is :chords))) 
         melodya  (->> [0 2 3 0] (phrase [1/2 7/2 1/2 8/2])
                       (after -1/2)
                       (where :part  (is :melody)))
@@ -44,15 +48,20 @@
          (then (with accompaniment melodyb)))))
 
 (def intro
-  (let [line #(->> (range 2 (+ 2 14))
-                   (phrase (repeat %))
-                   (canon (simple (* % 1/2)))
-                   (where :part (is :echo)))]
-    (->> (mapthen line [1 1/2 1/2 1/4 1/4])
-         (then (->> (mapthen line (mapcat repeat [2 4 8] [1/8 1/16 1/32]))
-                    (where :pitch raise)))
-         (where :duration #(* % 4))
-         (then (->> chorus (filter #(-> % :part #{:chords :melody}))))
+  (let [line (->> (range 2 (+ 2 14))
+                  (phrase (repeat 1))
+                  (canon (simple 1/2))
+                  (then (after -1/2 (phrase [1] [[2 9 16]])))
+                  (where :duration #(* % 8))
+                  (where :part (is :echo)))]
+    (->> line 
+         (then (->> chorus (filter #(-> % :part (= :melody)))
+                    (with (->> (interleave progression (repeat nil))
+                               (phrase (cycle [3 1]))
+                               (times 4 8)
+                               (where :part (is :chords))))
+                    (where :time #(* % 5/4))
+                    (where :duration #(* % 5/4)))) 
          (then (->> chorus
                     (filter #(-> % :part #{:echo :beat})) 
                     (filter #(-> % :time (<= 16))))))))
