@@ -106,7 +106,7 @@
         once (with verse extra-harmony)]
     (->> once 
          (times 2)
-         (then (map #(assoc % :volume (/ (- 16 (:time %)) 16)) once)))))
+         (then (map #(assoc % :volume (/ (- 32 (:time %)) 32)) once)))))
 
 (def track
   (->>
@@ -128,20 +128,20 @@
     (where :time (bpm 105))))
 
 ; Instruments
-(overtone/definst hat [] 
+(overtone/definst hat [vol 1.0] 
   (-> (overtone/perc 0 0.05)
       (overtone/env-gen :action overtone/FREE)
-      (* (overtone/white-noise)))) 
+      (* vol (overtone/white-noise)))) 
 
-(overtone/definst snare []
+(overtone/definst snare [vol 1.0]
   (-> (overtone/perc 0 0.05)
       (overtone/env-gen :action overtone/FREE)
-      (* (overtone/mix [(overtone/sin-osc 200) (overtone/white-noise)]))))
+      (* vol (overtone/mix [(overtone/sin-osc 200) (overtone/white-noise)]))))
 
-(overtone/definst bass-drum []
+(overtone/definst bass-drum [vol 1.0]
   (-> (overtone/perc 0 0.05)
       (overtone/env-gen :action overtone/FREE)
-      (* 3 (overtone/sin-osc 40))))
+      (* 3 vol (overtone/sin-osc 40))))
 
 (overtone/definst bass [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0 1 1)
@@ -165,12 +165,12 @@
                 (overtone/saw (overtone/lag (* freq 1.005) 0.1))])]
     (-> osc (overtone/lpf (+ 600 level)) (* 2 vol envelope))))
 
-(overtone/definst string [freq 440 dur 1000]
+(overtone/definst string [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 0.5)
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
         osc (overtone/saw freq)]
-    (-> osc (overtone/lpf 1500) (* envelope) (* 1/2))))
+    (-> osc (overtone/lpf 1500) (* vol envelope) (* 1/2))))
 
 (overtone/definst res [freq 440 dur 350 vol 1.0]
   (-> (overtone/perc 0 (* 2 (/ dur 1000)))
@@ -179,7 +179,7 @@
       (overtone/rlpf 800 0.1)
       (* 1/2 vol)))
 
-(overtone/definst poly [freq 440 dur 1000]
+(overtone/definst poly [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 0.1)
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
@@ -190,15 +190,15 @@
                  #(overtone/pulse (* freq %) (+ 0.5 (* 0.3 (overtone/lf-cub 2))))
                  [1 1.007]))
         osc2 (overtone/pulse (/ freq 2) 0.3)]
-    (* 1/3 envelope (overtone/rlpf (+ osc1 osc2) level 0.9))))
+    (* 1/3 vol envelope (overtone/rlpf (+ osc1 osc2) level 0.9))))
 
 ; Arrangement
 (def kit {:kick bass-drum
           :tick hat
           :tock snare})
 
-(defmethod play-note :beat [{drum :drum}]
-  ((drum kit)))
+(defmethod play-note :beat [{drum :drum vol :volume}]
+  ((drum kit) vol))
 
 (defmethod play-note :bass [{midi :pitch ms :duration vol :volume}]
   (-> midi overtone/midi->hz (bass ms vol)))
@@ -206,14 +206,14 @@
 (defmethod play-note :melody [{midi :pitch ms :duration vol :volume}]
   (-> midi overtone/midi->hz (solo ms vol)))
 
-(defmethod play-note :harmony [{midi :pitch ms :duration}]
-  (-> midi overtone/midi->hz (* 2) (string ms))) 
+(defmethod play-note :harmony [{midi :pitch ms :duration vol :volume}]
+  (-> midi overtone/midi->hz (* 2) (string ms vol))) 
 
 (defmethod play-note :echo [{midi :pitch ms :duration vol :volume}]
   (-> midi overtone/midi->hz (res ms vol)))
 
-(defmethod play-note :chords [{midi :pitch ms :duration}]
-  (-> midi overtone/midi->hz (poly ms)))
+(defmethod play-note :chords [{midi :pitch ms :duration vol :volume}]
+  (-> midi overtone/midi->hz (poly ms vol)))
 
 (defmethod play-note :default [note]
   (print (str "No part for " note ". ")))
