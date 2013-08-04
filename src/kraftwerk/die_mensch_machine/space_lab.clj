@@ -201,12 +201,12 @@
 
 (defonce sweep (random-walk :tgt writers sweep-bus))
 
-(overtone/definst res [freq 440 dur 350 vol 1.0]
-  (-> (overtone/perc 0 (* 2 (/ dur 1000)))
-      (overtone/env-gen :action overtone/FREE)
-      (* (overtone/mix [(overtone/saw freq) (overtone/pulse (/ freq 2) 0.5)]))
-      (overtone/rlpf (overtone/in:kr sweep-bus) 0.1)
-      (* 1/2 vol)))
+(overtone/defsynth res [freq 440 dur 350 vol 1.0]
+  (overtone/out 0 (-> (overtone/perc 0 (* 2 (/ dur 1000)))
+                      (overtone/env-gen :action overtone/FREE)
+                      (* (overtone/mix [(overtone/saw freq) (overtone/pulse (/ freq 2) 0.5)]))
+                      (overtone/rlpf (overtone/in:kr sweep-bus) 0.1)
+                      (* 1/2 vol))))
 
 (overtone/definst poly [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 0.1)
@@ -239,7 +239,7 @@
   (string (* 2 pitch) duration volume)) 
 
 (defmethod play-note :echo [{:keys [pitch duration volume]}]
-  (res pitch duration volume))
+  (res :tgt readers pitch duration volume))
 
 (defmethod play-note :chords [{:keys [pitch duration volume]}]
   (poly pitch duration volume))
