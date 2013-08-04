@@ -141,7 +141,7 @@
        (then verse)
        (then chorus)
        (then vamp)
-       (wherever :pitch, :pitch (comp C minor)) 
+       (wherever :pitch, :pitch (comp overtone/midi->hz C minor)) 
        (wherever (comp not :volume), :volume (is 1.0))
        (where :duration (bpm 105)) 
        (where :time (bpm 105))))
@@ -216,23 +216,23 @@
           :tick hat
           :tock snare})
 
-(defmethod play-note :beat [{drum :drum vol :volume}]
-  ((drum kit) vol))
+(defmethod play-note :beat [{:keys [drum volume]}]
+  ((drum kit) volume))
 
-(defmethod play-note :bass [{midi :pitch ms :duration vol :volume}]
-  (-> midi overtone/midi->hz (bass ms vol)))
+(defmethod play-note :bass [{:keys [pitch duration volume]}]
+  (bass pitch duration volume))
 
-(defmethod play-note :melody [{midi :pitch ms :duration vol :volume}]
-  (-> midi overtone/midi->hz (solo ms vol)))
+(defmethod play-note :melody [{:keys [pitch duration volume]}]
+  (solo pitch duration volume))
 
-(defmethod play-note :harmony [{midi :pitch ms :duration vol :volume}]
-  (-> midi overtone/midi->hz (* 2) (string ms vol))) 
+(defmethod play-note :harmony [{:keys [pitch duration volume]}]
+  (string (* 2 pitch) duration volume)) 
 
-(defmethod play-note :echo [{midi :pitch ms :duration vol :volume}]
-  (-> midi overtone/midi->hz (res ms vol)))
+(defmethod play-note :echo [{:keys [pitch duration volume]}]
+  (res pitch duration volume))
 
-(defmethod play-note :chords [{midi :pitch ms :duration vol :volume}]
-  (-> midi overtone/midi->hz (poly ms vol)))
+(defmethod play-note :chords [{:keys [pitch duration volume]}]
+  (poly pitch duration volume))
 
 (comment
   (play track)
