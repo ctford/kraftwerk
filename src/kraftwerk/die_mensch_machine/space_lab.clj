@@ -124,11 +124,13 @@
                            (phrase [4 1 0.5 6.5 1 0.5 2.5])
                            (times 2)
                            (where :part (is :harmony)))
-        once (with verse extra-harmony)]
+        once (with verse extra-harmony)
+        fade-out (map (fn [{t :time :as note}]
+                        (assoc note :volume (/ (- 32 t) 32)))
+                      once)]
     (->> once 
          (times 2)
-         (then (map #(assoc % :volume
-                            (/ (max 0 (- 30 (:time %))) 32)) once)))))
+         (then fade-out))))
 
 (def track
   (->> intro
