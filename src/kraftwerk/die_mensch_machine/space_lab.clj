@@ -76,8 +76,8 @@
                                (times 4 8)
                                (where :part (is :chords)))))) 
          (then (->> chorus
-                    (filter #(-> % :part #{:echo :beat})) 
-                    (filter #(-> % :time (<= 16))))))))
+                    (but :from 16 [])
+                    (filter #(-> % :part #{:echo :beat})))))))
 
 (def verse
   (let [bass (->> [0 2 3 6 7]
