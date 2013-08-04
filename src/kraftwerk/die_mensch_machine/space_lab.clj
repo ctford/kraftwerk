@@ -45,7 +45,8 @@
   (let [chords (->> (interleave (repeat nil) progression)
                     (phrase (cycle [1 3]))
                     (where :part (is :chords))) 
-        melodya  (->> [0 2 3 0] (phrase [1/2 7/2 1/2 8/2])
+        melodya  (->> [0 2 3 0]
+                      (phrase [1/2 7/2 1/2 8/2])
                       (after -1/2)
                       (where :part (is :melody)))
         melodyb  (->> melodya
