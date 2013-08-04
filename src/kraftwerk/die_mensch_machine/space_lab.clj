@@ -90,7 +90,9 @@
                      (but :from 3 :until 4 (phrase [1/2 1/2] [8 9]))
                      (but :from 13 (phrase [1/2 5/2] [-1 0]))
                      (where :part (is :melody)))
-        harmony (->> [7 6 5 4] (phrase (repeat 4)) (where :part (is :harmony)))
+        harmony (->> [7 6 5 4]
+                     (phrase (repeat 4))
+                     (where :part (is :harmony)))
         echo (->> (mapcat repeat [32 14 2 16] [0 3 6 0])
                   (phrase (repeat 1/4))
                   (where :part (is :echo)))
