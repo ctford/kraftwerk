@@ -17,16 +17,17 @@
        (reduce #(then %2 %1))))
 
 (defn but
-  "Replace the specified section of notes. Not lazy.
+  "Replace the specified section of notes.
   e.g. (->> melody (but :from 3 :until 7 (phrase [3 4] [5 5])))
-  (->> melody (but :from 3 (phrase [4] [5])))"
+       (->> melody (but :from 3 (phrase [4] [5])))
+       (->> melody (but :until 7 (phrase [1] [3])))"
   [& args]
   (let [[replacement notes] (take-last 2 args)
-        {start :from end :until :or {start 0 end 9999}} args
-        for-replacement? (fn [{t :time}] (and (>= t start) (< t end)))]
-    (->> notes
-         (filter (comp not for-replacement?))
-         (with (->> replacement (where :time (from start)))))))
+        {start :from end :until :or {start 0 end 9999}} args]
+    (reduce with
+            [(->> notes (take-while (fn [{t :time}] (< t start))))
+             (->> replacement (where :time (from start))) 
+             (->> notes (drop-while (fn [{t :time}] (< t end))))])))
 
 ; Notes
 (def beat
