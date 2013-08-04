@@ -41,9 +41,9 @@
    (-> triad (root -4) (update-in [:iii] #(+ % 1/2)))]) 
 
 (def chorus
-  (let [chords (->> (interleave (repeat nil) progression)
-                    (phrase (cycle [1 3]))
-                    (where :part (is :chords))) 
+  (let [chords   (->> (interleave (repeat nil) progression)
+                      (phrase (cycle [1 3]))
+                      (where :part (is :chords))) 
         melodya  (->> [0 2 3 0]
                       (phrase [1/2 7/2 1/2 8/2])
                       (after -1/2)
@@ -51,10 +51,11 @@
         melodyb  (->> melodya
                       (but :from 4 (phrase [8/2] [7]))
                       (where :part (is :melody)))
-        harmony  (->> [7] (phrase [8]) (where :part (is :harmony)))
-        echo  (->> (mapcat repeat [16 16] [2 0])
-                   (phrase (repeat 1/4))
-                   (where :part (is :echo)))
+        harmony  (->> (phrase [8] [7])
+                      (where :part (is :harmony)))
+        echo     (->> (mapcat repeat [16 16] [2 0])
+                      (phrase (repeat 1/4))
+                      (where :part (is :echo)))
         accompaniment (reduce with [echo chords harmony beat])] 
     (->> accompaniment
          (then (with accompaniment melodya))
@@ -62,63 +63,59 @@
          (then (with accompaniment melodyb)))))
 
 (def intro
-  (let [line (->> (range 2 16)
-                  (phrase (repeat 1))
+  (let [line (->> (phrase (repeat 1) (range 2 16))
                   (canon (simple 1/2))
                   (then (after -1/2 (phrase [1] [[2 9 16]])))
                   (where :duration #(* % 8))
                   (where :part (is :echo)))]
     (->> line 
-         (then (->> chorus (filter #(-> % :part (= :melody)))
+         (then (->> (filter (comp #{:melody} :part) chorus)
                     (with (->> (interleave progression (repeat nil))
                                (phrase (cycle [3 1]))
                                (times 4 8)
                                (where :part (is :chords)))))) 
          (then (->> chorus
                     (but :from 16 [])
-                    (filter #(-> % :part #{:echo :beat})))))))
+                    (filter (comp #{:echo :beat} :part)))))))
 
 (def verse
-  (let [bass (->> [0 2 3 6 7]
-                  (phrase [7.5 0.5 3.5 0.5 4])
-                  (where :pitch lower)
-                  (where :part (is :bass)))
-        melodya (->> [5 6 7 6 5 4 5 6]
-                     (phrase [1 1/2 3/2 1/2 1/2 1 1/2 5/2])
-                     (canon (comp (interval -2) (simple 8)))
-                     (where :part (is :melody)))
-        melodyb (->> melodya 
-                     (but :from 3 :until 4 (phrase [1/2 1/2] [8 9]))
-                     (but :from 13 (phrase [1/2 5/2] [-1 0]))
-                     (where :part (is :melody)))
-        harmony (->> [7 6 5 4]
-                     (phrase (repeat 4))
-                     (where :part (is :harmony)))
-        echo (->> (mapcat repeat [32 14 2 16] [0 3 6 0])
-                  (phrase (repeat 1/4))
-                  (where :part (is :echo)))
+  (let [bass     (->> [0 2 3 6 7]
+                      (phrase [7.5 0.5 3.5 0.5 4])
+                      (where :pitch lower)
+                      (where :part (is :bass)))
+        melodya  (->> [5 6 7 6 5 4 5 6]
+                      (phrase [1 1/2 3/2 1/2 1/2 1 1/2 5/2])
+                      (canon (comp (interval -2) (simple 8)))
+                      (where :part (is :melody)))
+        melodyb  (->> melodya 
+                      (but :from 3 :until 4 (phrase [1/2 1/2] [8 9]))
+                      (but :from 13 (phrase [1/2 5/2] [-1 0]))
+                      (where :part (is :melody)))
+        harmony  (->> [7 6 5 4]
+                      (phrase (repeat 4))
+                      (where :part (is :harmony)))
+        echo     (->> (mapcat repeat [32 14 2 16] [0 3 6 0])
+                      (phrase (repeat 1/4))
+                      (where :part (is :echo)))
         accompaniment (reduce with [bass harmony echo (times 2 beat)])]
     (->> (with melodya accompaniment)
          (then (with melodyb accompaniment)))))
 
 (def break
-  (let [harmony (->> (cycle [0 7])
-                     (phrase (repeat 32 1))
+  (let [harmony (->> (phrase (repeat 32 1) (cycle [0 7]))
                      (where :part (is :harmony)))
-        bass (->> (cycle [2 0])
-                  (phrase (repeat 4 8))
-                  (where :pitch lower)
-                  (where :part (is :bass)))
-        melodya (->> [nil 2 3 0]
-                     (phrase [16 7 1 8])
+        bass    (->> (phrase (repeat 4 8) (cycle [2 0]))
+                     (where :pitch lower)
+                     (where :part (is :bass)))
+        melodya (->> (phrase [16 7 1 8] [nil 2 3 0])
                      (where :part (is :melody)))
-        melodyb  (->> melodya
-                      (but :from 24 (phrase [8] [7]))
-                      (where :part (is :melody))) 
-        echo  (->> (mapcat repeat [32 32] [2 0])
-                   (phrase (repeat 1/4))
-                   (times 2)
-                   (where :part (is :echo)))]
+        melodyb (->> melodya
+                     (but :from 24 (phrase [8] [7]))
+                     (where :part (is :melody))) 
+        echo    (->> (mapcat repeat [32 32] [2 0])
+                     (phrase (repeat 1/4))
+                     (times 2)
+                     (where :part (is :echo)))]
     (->> (reduce with [melodya bass harmony])
          (then (reduce with [melodyb harmony echo bass (times 4 beat)])))))
 
@@ -169,23 +166,23 @@
   (let [envelope (overtone/env-gen (overtone/asr 0 1 1)
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
-        level (overtone/env-gen (overtone/perc 0 3)
-                                :level-scale 6000)
+        level (+ 100 (overtone/env-gen (overtone/perc 0 3)
+                                       :level-scale 6000))
         osc (overtone/mix [(overtone/saw freq)
                            (overtone/saw (* freq 1.005))
                            (overtone/pulse (/ freq 2) 0.5)])]
-    (-> osc (overtone/lpf (+ 100 level)) (* vol envelope))))
+    (-> osc (overtone/lpf level) (* vol envelope))))
 
 (overtone/definst solo [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 2)
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
-        level (overtone/env-gen (overtone/adsr 0.4 1.2 0.7 2)
-                                :level-scale 800)
+        level (+ 600 (overtone/env-gen (overtone/adsr 0.4 1.2 0.7 2)
+                                :level-scale 800))
         osc (overtone/mix
               [(overtone/saw (overtone/lag freq 0.1))
                (overtone/saw (overtone/lag (* freq 1.005) 0.1))])]
-    (-> osc (overtone/lpf (+ 600 level)) (* 2 vol envelope))))
+    (-> osc (overtone/lpf level) (* 2 vol envelope))))
 
 (overtone/definst string [freq 440 dur 1000 vol 1.0]
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 0.5)
