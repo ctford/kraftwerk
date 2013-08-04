@@ -61,7 +61,7 @@
          (then (with accompaniment melodyb)))))
 
 (def intro
-  (let [line (->> (range 2 (+ 2 14))
+  (let [line (->> (range 2 16)
                   (phrase (repeat 1))
                   (canon (simple 1/2))
                   (then (after -1/2 (phrase [1] [[2 9 16]])))
