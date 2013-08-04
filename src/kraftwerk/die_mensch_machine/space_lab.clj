@@ -180,11 +180,11 @@
   (let [envelope (overtone/env-gen (overtone/asr 0.2 1 2)
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
-        level  (overtone/env-gen (overtone/adsr 0.4 1.2 0.7 2)
-                                 :level-scale 800)
-        osc  (overtone/mix
-               [(overtone/saw (overtone/lag freq 0.1))
-                (overtone/saw (overtone/lag (* freq 1.005) 0.1))])]
+        level (overtone/env-gen (overtone/adsr 0.4 1.2 0.7 2)
+                                :level-scale 800)
+        osc (overtone/mix
+              [(overtone/saw (overtone/lag freq 0.1))
+               (overtone/saw (overtone/lag (* freq 1.005) 0.1))])]
     (-> osc (overtone/lpf (+ 600 level)) (* 2 vol envelope))))
 
 (overtone/definst string [freq 440 dur 1000 vol 1.0]
@@ -192,7 +192,7 @@
                                    (overtone/line:kr 1.0 0.0 (/ dur 1000))
                                    :action overtone/FREE)
         osc (overtone/saw freq)]
-    (-> osc (overtone/lpf 1500) (* vol envelope) (* 1/2))))
+    (-> osc (overtone/lpf 1500) (* 1/2 vol envelope))))
 
 (overtone/definst res [freq 440 dur 350 vol 1.0]
   (-> (overtone/perc 0 (* 2 (/ dur 1000)))
@@ -209,7 +209,7 @@
                                 :level-scale 12000)
         osc1 (overtone/mix
                (map
-                 #(overtone/pulse (* freq %) (+ 0.5 (* 0.3 (overtone/lf-cub 2))))
+                 #(overtone/pulse (* freq %) (overtone/mul-add (overtone/lf-cub 2) 0.3 0.5))
                  [1 1.007]))
         osc2 (overtone/pulse (/ freq 2) 0.3)]
     (* 1/3 vol envelope (overtone/rlpf (+ osc1 osc2) level 0.9))))
@@ -236,9 +236,6 @@
 
 (defmethod play-note :chords [{midi :pitch ms :duration vol :volume}]
   (-> midi overtone/midi->hz (poly ms vol)))
-
-(defmethod play-note :default [note]
-  (print (str "No part for " note ". ")))
 
 (comment
   (play track)
