@@ -24,18 +24,16 @@
   (let [[replacement notes] (take-last 2 args)
         {start :from end :until :or {start 0 end 9999}} args
         for-replacement? (fn [{t :time}] (and (>= t start) (< t end)))]
-    (->>
-      notes
-      (filter (comp not for-replacement?))
-      (with (->> replacement (where :time (from start)))))))
+    (->> notes
+         (filter (comp not for-replacement?))
+         (with (->> replacement (where :time (from start)))))))
 
 ; Notes
 (def beat
-  (->>
-    (rhythm (repeat 32 1/4))
-    (where :drum (is :tick))
-    (with (->> (rhythm (repeat 8 1)) (having :drum (cycle [:kick :tock]))))
-    (where :part (is :beat))))
+  (->> (rhythm (repeat 32 1/4))
+       (where :drum (is :tick))
+       (with (->> (rhythm (repeat 8 1)) (having :drum (cycle [:kick :tock]))))
+       (where :part (is :beat))))
 
 (def progression
   [(-> triad (root 2) (inversion 1))
@@ -102,19 +100,17 @@
 
 (def break
   (let [harmony (->> (cycle [0 7])
-                     (phrase (repeat 1))
-                     (take 32)
+                     (phrase (repeat 32 1))
                      (where :part (is :harmony)))
-        bass (->> [2 0]
-                  (phrase (repeat 8))
-                  (times 2)
+        bass (->> (cycle [2 0])
+                  (phrase (repeat 4 8))
                   (where :pitch lower)
                   (where :part (is :bass)))
-        melodya (->> [2 3 0] (phrase [7 1 8])
-                     (after 16)
+        melodya (->> [nil 2 3 0]
+                     (phrase [16 7 1 8])
                      (where :part (is :melody)))
-        melodyb  (->> [2 3 7] (phrase [7 1 8]) 
-                      (after 16)
+        melodyb  (->> melodya
+                      (but :from 24 (phrase [8] [7]))
                       (where :part (is :melody))) 
         echo  (->> (mapcat repeat [32 32] [2 0])
                    (phrase (repeat 1/4))
@@ -135,19 +131,18 @@
                             (/ (max 0 (- 30 (:time %))) 32)) once)))))
 
 (def track
-  (->>
-    intro
-    (then chorus)
-    (then verse)
-    (then chorus)
-    (then break)
-    (then verse)
-    (then chorus)
-    (then vamp)
-    (wherever :pitch, :pitch (comp C minor)) 
-    (wherever (comp not :volume), :volume (is 1.0))
-    (where :duration (bpm 105)) 
-    (where :time (bpm 105))))
+  (->> intro
+       (then chorus)
+       (then verse)
+       (then chorus)
+       (then break)
+       (then verse)
+       (then chorus)
+       (then vamp)
+       (wherever :pitch, :pitch (comp C minor)) 
+       (wherever (comp not :volume), :volume (is 1.0))
+       (where :duration (bpm 105)) 
+       (where :time (bpm 105))))
 
 ; Instruments
 (overtone/definst hat [vol 1.0] 
