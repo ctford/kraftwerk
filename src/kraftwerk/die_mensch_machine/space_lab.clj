@@ -23,10 +23,10 @@
   [& args]
   (let [[replacement notes] (take-last 2 args)
         {start :from end :until :or {start 0 end 9999}} args
-        outside? (fn [{t :time}] (or (<= t start) (> t end)))]
+        for-replacement? (fn [{t :time}] (and (>= t start) (< t end)))]
     (->>
       notes
-      (filter outside?)
+      (filter (comp not for-replacement?))
       (with (->> replacement (where :time (from start)))))))
 
 ; Notes
