@@ -17,7 +17,7 @@
        (reduce #(then %2 %1))))
 
 (defn but
-  "Replace the specified section of notes.
+  "Replace the specified section of notes. Not lazy.
   e.g. (->> melody (but :from 3 :until 7 (phrase [3 4] [5 5])))
   (->> melody (but :from 3 (phrase [4] [5])))"
   [& args]
