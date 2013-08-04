@@ -29,8 +29,6 @@
       (filter outside?)
       (with (->> replacement (where :time (from start)))))))
 
-(def inv inversion)
-
 ; Notes
 (def beat
   (->>
@@ -40,7 +38,7 @@
     (where :part (is :beat))))
 
 (def progression
-  [(-> triad (root 2) (inv 1))
+  [(-> triad (root 2) (inversion 1))
    (-> triad (root -4) (update-in [:iii] #(+ % 1/2)))]) 
 
 (def chorus
@@ -243,5 +241,3 @@
 (comment
   (play track)
   )
-
-
