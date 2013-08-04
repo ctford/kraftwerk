@@ -116,7 +116,7 @@
         melodyb  (->> [2 3 7] (phrase [7 1 8]) 
                       (after 16)
                       (where :part (is :melody))) 
-        echo  (->> (concat (repeat 32 2) (repeat 32 0))
+        echo  (->> (mapcat repeat [32 32] [2 0])
                    (phrase (repeat 1/4))
                    (times 2)
                    (where :part (is :echo)))]
