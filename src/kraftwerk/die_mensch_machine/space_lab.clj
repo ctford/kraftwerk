@@ -191,11 +191,21 @@
         osc (overtone/saw freq)]
     (-> osc (overtone/lpf 1500) (* 1/2 vol envelope))))
 
+(defonce sweep-bus (overtone/audio-bus))
+(defonce sweepers (overtone/group "Synths connected to the sweep."))
+(defonce writers (overtone/group "Pushing onto the bus." :head sweepers))
+(defonce readers (overtone/group "Pulling from the bus." :after writers))
+
+(overtone/defsynth random-walk [out-bus 0 freq 0.3]
+  (overtone/out:kr out-bus (overtone/mul-add (overtone/lf-noise1:kr freq) 1000 1500)))
+
+(defonce sweep (random-walk :tgt writers sweep-bus))
+
 (overtone/definst res [freq 440 dur 350 vol 1.0]
   (-> (overtone/perc 0 (* 2 (/ dur 1000)))
       (overtone/env-gen :action overtone/FREE)
       (* (overtone/mix [(overtone/saw freq) (overtone/pulse (/ freq 2) 0.5)]))
-      (overtone/rlpf 800 0.1)
+      (overtone/rlpf (overtone/in:kr sweep-bus) 0.1)
       (* 1/2 vol)))
 
 (overtone/definst poly [freq 440 dur 1000 vol 1.0]
