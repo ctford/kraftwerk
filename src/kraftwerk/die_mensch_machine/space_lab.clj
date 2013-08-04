@@ -23,7 +23,7 @@
        (->> melody (but :until 7 (phrase [1] [3])))"
   [& args]
   (let [[replacement notes] (take-last 2 args)
-        {start :from end :until :or {start 0 end 9999}} args]
+        {start :from end :until :or {start 0 end Integer/MAX_VALUE}} args]
     (reduce with
             [(->> notes (take-while (fn [{t :time}] (< t start))))
              (->> replacement (where :time (from start))) 
