@@ -53,7 +53,8 @@
                       (but :from 4 (phrase [8/2] [7]))
                       (where :part (is :melody)))
         harmony  (->> [7] (phrase [8]) (where :part (is :harmony)))
-        echo  (->> (concat (repeat 16 2) (repeat 16 0)) (phrase (repeat 1/4))
+        echo  (->> (mapcat repeat [16 16] [2 0])
+                   (phrase (repeat 1/4))
                    (where :part (is :echo)))
         accompaniment (reduce with [echo chords harmony beat])] 
     (->> accompaniment
