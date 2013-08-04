@@ -3,4 +3,4 @@
   :url "http://github.com/ctford/kraftwerk"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [overtone "0.8.1"]
-                 [leipzig "0.6.0"]])
+                 [leipzig "0.7.0-SNAPSHOT"]])

@@ -16,10 +16,22 @@
        (apply map f)
        (reduce #(then %2 %1))))
 
+(defn but
+  "Replace the specified section of notes.
+  e.g. (->> melody (but :from 3 :until 7 (phrase [3 4] [5 5])))
+  (->> melody (but :from 3 (phrase [4] [5])))"
+  [& args]
+  (let [[replacement notes] (take-last 2 args)
+        {start :from end :until :or {start 0 end 9999}} args
+        outside? (fn [{t :time}] (or (<= t start) (> t end)))]
+    (->>
+      notes
+      (filter outside?)
+      (with (->> replacement (where :time (from start)))))))
+
 (def inv inversion)
 
 ; Notes
-
 (def beat
   (->>
     (rhythm (repeat 32 1/4))
@@ -37,8 +49,9 @@
                     (where :part (is :chords))) 
         melodya  (->> [0 2 3 0] (phrase [1/2 7/2 1/2 8/2])
                       (after -1/2)
-                      (where :part  (is :melody)))
-        melodyb  (->> melodya drop-last (then (phrase [8/2] [7]))
+                      (where :part (is :melody)))
+        melodyb  (->> melodya
+                      (but :from 4 (phrase [8/2] [7]))
                       (where :part (is :melody)))
         harmony  (->> [7] (phrase [8]) (where :part (is :harmony)))
         echo  (->> (concat (repeat 16 2) (repeat 16 0)) (phrase (repeat 1/4))
@@ -75,10 +88,9 @@
                      (phrase [1 1/2 3/2 1/2 1/2 1 1/2 5/2])
                      (canon (comp (interval -2) (simple 8)))
                      (where :part (is :melody)))
-        melodyb (->> [5 6 7 8 9]
-                     (phrase [1 1/2 3/2 1/2 1/2])
-                     (then (->> melodya (drop 5) (drop-last 3) (after -4)))
-                     (then (phrase [1 1/2 5/2] [2 -1 0]))
+        melodyb (->> melodya 
+                     (but :from 3 :until 4 (phrase [1/2 1/2] [8 9]))
+                     (but :from 13 (phrase [1/2 5/2] [-1 0]))
                      (where :part (is :melody)))
         harmony (->> [7 6 5 4] (phrase (repeat 4)) (where :part (is :harmony)))
         echo (->> (concat (repeat 32 0) (repeat 14 3) (repeat 2 6) (repeat 16 0))
@@ -231,3 +243,5 @@
 (comment
   (play track)
   )
+
+
