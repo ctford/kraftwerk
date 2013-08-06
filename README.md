@@ -7,7 +7,7 @@ To play
 -------
 Leiningen is the standard build tool in the Clojure world.
 
-* Install (Leiningen)[https://github.com/technomancy/leiningen].
+* Install [Leiningen](https://github.com/technomancy/leiningen).
 
 This opens up a read-evaluate-print-loop.
 
